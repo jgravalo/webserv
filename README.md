@@ -1,16 +1,40 @@
+# 🌐 Webserv
+
+**Webserv** is a lightweight HTTP/1.1-compliant server written in C++98. It is designed to handle multiple client connections concurrently using a non-blocking I/O model and minimal system resources. The goal of this project is to deeply understand the mechanics of HTTP communication and server architecture, by building an actual HTTP server from scratch.
+
 This program parses a configuration file, similar to that in Nginx, sets up and binds the listening sockets, accepts incoming connections, handles each single I/O interaction with the client flow through a poll implementation and can receive and serve GET, DELETE and POST HTTP requests.
 
-## Installation
+---
 
-Call the Makefile in the root of the repository
+## 📦 Project Overview
+
+- **Language**: C++98
+- **Standard**: -Wall -Wextra -Werror -std=c++98
+- **I/O Model**: `poll()` (or `select()`, `kqueue()`, or `epoll()`)
+- **OS Compatibility**: Linux and macOS (with specific `fcntl()` flags allowed)
+- **Build System**: Makefile
+
+---
+🔧 Features
+- ✅ Non-blocking I/O using a single poll() call
+- ✅ Multiple server blocks listening on different ports and IPs
+- ✅ Custom routing and location blocks
+- ✅ Static file serving (HTML, images, etc.)
+- ✅ File upload via POST
+- ✅ CGI support (e.g., PHP, Python scripts)
+- ✅ Configurable error pages
+- ✅ Accurate HTTP status codes and headers
+- ✅ Directory listing (optional per location)
+- ✅ Method restrictions (GET, POST, DELETE)
+- ✅ HTTP redirects
+- ✅ Default file serving for directories
+- ✅ Stress-test ready & resilient
+
+---
+## 🏁 How to Run
 
 ```bash
-make
-```
 
-## Usage
-
-```bash
 ./webserv
 
 # it calls the default server at ./conf/default.conf
@@ -28,6 +52,33 @@ server {
      listen 8888;
      root .;
 }
+server {
+    listen 127.0.0.1:8080;
+    server_name localhost;
+
+    error_page 404 /404.html;
+
+    client_max_body_size 1M;
+
+    location / {
+        root /var/www/html;
+        index index.html;
+        autoindex on;
+        methods GET POST;
+    }
+
+    location /upload {
+        root /var/www/uploads;
+        methods POST;
+        upload_store /tmp/uploads;
+    }
+
+    location /cgi-bin {
+        cgi_pass /usr/bin/php-cgi;
+        extensions .php;
+    }
+}
+
 
 ```
 
